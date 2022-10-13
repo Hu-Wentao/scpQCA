@@ -3,38 +3,32 @@ import numpy as np
 import itertools
 import copy
 import random
-import networkx as nx
 import matplotlib.pyplot as plt
-from queue import Queue
 from sklearn import tree
 from sklearn import linear_model
 
 
 class scpQCA:
-    def __init__(self,data,feature_list,decision_name, caseid):
+    def __init__(self,data, decision_name, caseid):
         self.data=data
-        self.feature_list=feature_list
-        self.necessity=[]
         self.decision_name=decision_name
-        self.decision_label=-1
         self.caseid=caseid
-        self.formal_feature=[]
-        self.omit=[]
+        self.necessity=dict()
+        for value in self.data[self.decision_name].unique():
+            self.necessity[value]=None
+
         
-    def direct_calibration(self, full_membership, cross_over, full_nonmembership):
+    def direct_calibration(self, feature_list, full_membership, cross_over, full_nonmembership):
         def Ragin_direct(data, full_membership, cross_over, full_nonmembership):
             deviation=[i-cross_over for i in data]
             log_odds=[i*(3/(full_membership-cross_over)) if i>0 else i*(-3/(full_nonmembership-cross_over)) for i in deviation]
             return [round(np.exp(i)/(1+np.exp(i)),3) for i in log_odds]
-        self.raw_data=copy.deepcopy(self.data)
-        if self.caseid !=None and self.caseid in self.feature_list:
-            self.feature_list.remove(self.caseid)
-        # if self.decision_name in self.feature_list:
-        #     self.feature_list.remove(self.decision_name)
-        for factor in self.feature_list:
+        if self.caseid !=None and self.caseid in feature_list:
+            feature_list.remove(self.caseid)
+        for factor in feature_list:
             self.data[factor]=np.array(Ragin_direct(list(self.data[factor]), full_membership, cross_over, full_nonmembership))
 
-    def indirect_calibration(self, class_num, full_membership=None, full_nonmembership=None):
+    def indirect_calibration(self, feature_list, class_num, full_membership=None, full_nonmembership=None):
         def Ragin_indirect(data, class_num, full_membership, full_nonmembership):
             if full_membership!=None and full_nonmembership!=None:
                 a,b=full_membership, full_nonmembership
@@ -48,33 +42,26 @@ class scpQCA:
                         cali.append(round(j/(class_num-1),3))
                         break
             return cali
-        self.raw_data=copy.deepcopy(self.data)
-        if self.caseid !=None and self.caseid in self.feature_list:
-            self.feature_list.remove(self.caseid)
-        # if self.decision_name in self.feature_list:
-        #     self.feature_list.remove(self.decision_name)
-        for factor in self.feature_list:
-            # print(factor)
+        if self.caseid !=None and self.caseid in feature_list:
+            feature_list.remove(self.caseid)
+        for factor in feature_list:
             self.data[factor]=np.array(Ragin_indirect(list(self.data[factor]),class_num, full_membership, full_nonmembership))
     
-    def raw_truth_table(self,decision_label,cutoff=2,consistency_threshold=0.8,sortedby=True):
-        character_list=copy.deepcopy(self.feature_list)
-        if self.caseid !=None and self.caseid in character_list:
-            character_list.remove(self.caseid)
-        if self.decision_name in character_list:
-            character_list.remove(self.decision_name)
+    def raw_truth_table(self, decision_label, feature_list, cutoff=2, consistency_threshold=0.8, sortedby=True):
+        if self.caseid !=None and self.caseid in feature_list:
+            feature_list.remove(self.caseid)
+        if self.decision_name in feature_list:
+            feature_list.remove(self.decision_name)
         issues=len(self.data.loc[(self.data[self.decision_name]==decision_label)])
         Cartesian=[]
-        for i in range(len(character_list)):
-            Cartesian.append(list(self.data[character_list[i]].unique()))
+        for i in range(len(feature_list)):
+            Cartesian.append(list(self.data[feature_list[i]].unique()))
         values=[d for d in itertools.product(*Cartesian)]
         raw=[]
-        print(len(values))
         for v in range(len(values)):
-            # print(v)
             Q=''
-            for i in range(len(character_list)):
-                Q+=str(character_list[i])+'=='+str(values[v][i])+' & '
+            for i in range(len(feature_list)):
+                Q+=str(feature_list[i])+'=='+str(values[v][i])+' & '
             Q=Q[:-3]
             result=self.data.query(Q)
             if len(result)!=0:
@@ -83,37 +70,42 @@ class scpQCA:
                 raw_coverage=len(result.loc[(result[self.decision_name]==decision_label)])/issues if issues>0 else 0
                 case_list=list(result[self.caseid]) if self.caseid!=None else []
                 if number>=cutoff and raw_consistency>=consistency_threshold:
+                    # true table value + number + cases + consistency + coverage
                     raw.append((values[v]+(number,case_list,raw_consistency,raw_coverage,)))
-        print("raw finished")
         if sortedby:
             # ordered by number (coverage)
-            raw=sorted(raw, key=lambda raw: raw[len(character_list)+3],reverse=True)
-            raw=sorted(raw, key=lambda raw: raw[len(character_list)],reverse=True)
+            raw=sorted(raw, key=lambda raw: raw[len(feature_list)+2],reverse=True)
+            raw=sorted(raw, key=lambda raw: raw[len(feature_list)+3],reverse=True)
         else:
             # ordered by consistency
-            raw=sorted(raw, key=lambda raw: raw[len(character_list)+3],reverse=True)
-            raw=sorted(raw, key=lambda raw: raw[len(character_list)+2],reverse=True)
-        character_list.append('number')
-        character_list.append('caseid')
-        character_list.append('consistency')
-        character_list.append('coverage')
+            raw=sorted(raw, key=lambda raw: raw[len(feature_list)+3],reverse=True)
+            raw=sorted(raw, key=lambda raw: raw[len(feature_list)+2],reverse=True)
+        feature_list.append('number')
+        feature_list.append('caseid')
+        feature_list.append('consistency')
+        feature_list.append('coverage')
 
-        truth_table=pd.DataFrame(raw,columns=character_list)
+        truth_table=pd.DataFrame(raw,columns=feature_list)
         print(truth_table)
+        return truth_table
 
-    def scp_truth_table(self,rules,decision_label):
-        self.decision_label=decision_label
+    def scp_truth_table(self,rules, feature_list,decision_label):
+        if self.caseid !=None and self.caseid in feature_list:
+            feature_list.remove(self.caseid)
+        if self.decision_name in feature_list:
+            feature_list.remove(self.decision_name)
+
         issues=len(self.data.loc[(self.data[self.decision_name]==decision_label)])
         rules=sorted(rules,key=lambda raw:raw[0],reverse=True)
         df=[]
         for i in range(len(rules)):
-            row=['-']*(len(self.feature_list)+3)
+            row=['-']*(len(feature_list)+3)
             Q=rules[i][0].split(' & ')
             for j in Q:
                 equation=j.split('==')
                 factor=equation[0]
                 value=equation[1]
-                row[self.feature_list.index(factor)]=value
+                row[feature_list.index(factor)]=value
             result=self.data.query(rules[i][0])
             number=len(result)
             raw_consistency=len(result.loc[(result[self.decision_name]==decision_label)])/len(result) if number>0 else 0
@@ -121,38 +113,36 @@ class scpQCA:
             row[-2]=format(raw_consistency, '.4f') 
             row[-1]=format(len(result.loc[(result[self.decision_name]==decision_label)])/issues, '.4f') 
             df.append(row)
+        # value + number + consistency + coverage
         df=sorted(df, key=lambda raw: raw[-2],reverse=True)
         df=sorted(df, key=lambda raw: raw[-1],reverse=True)
-        character_list=copy.deepcopy(self.feature_list)
-        character_list.append('number')
-        character_list.append('consistency')
-        character_list.append('coverage')
-        truth_table=pd.DataFrame(df,columns=character_list)
+
+        feature_list.append('number')
+        feature_list.append('consistency')
+        feature_list.append('coverage')
+        truth_table=pd.DataFrame(df,columns=feature_list)
         with pd.option_context('display.max_rows', None):  
             print(truth_table)
         return truth_table
 
-    def search_necessity(self,decision_label,consistency_threshold=0.9):
-        self.decision_label=decision_label
-        self.necessity=[]
-        character_list=copy.deepcopy(self.feature_list)
-        if self.caseid !=None and self.caseid in character_list:
-            character_list.remove(self.caseid)
-        if self.decision_name in character_list:
-            character_list.remove(self.decision_name)
-        issue=len(self.data.loc[(self.data[self.decision_name]==self.decision_label)])
+    def search_necessity(self, decision_label, feature_list,consistency_threshold=0.9):
+        self.necessity[decision_label]=[]
+        if self.caseid !=None and self.caseid in feature_list:
+            feature_list.remove(self.caseid)
+        if self.decision_name in feature_list:
+            feature_list.remove(self.decision_name)
+
+        issue=len(self.data.loc[(self.data[self.decision_name]==decision_label)])
         if issue==0:
             return []
         necessity=dict()
-        for character in character_list:
+        for character in feature_list:
             for value in self.data[character].unique():
-                if len(self.data.loc[(self.data[self.decision_name]==self.decision_label) & (self.data[character]==float(value))])/issue>=consistency_threshold:
-                    # print("{}=={} is a necessity condition".format(character,value))
+                if len(self.data.loc[(self.data[self.decision_name]==decision_label) & (self.data[character]==float(value))])/issue>=consistency_threshold:
+                    print("{}=={} is a necessity condition".format(character,value))
                     necessity[character]=value
-                    self.necessity.append(str(character)+'=='+str(value))
-        self.formal_feature=self.feature_list
-        self.feature_list=character_list
-        return necessity
+                    self.necessity[decision_label].append(str(character)+'=='+str(value))
+
 
     def __search_combination(self, items):
         if len(items) == 0:
@@ -166,39 +156,18 @@ class scpQCA:
             subsets.append(next_subset)
         return subsets
 
-    def filter(self):
-        self.omit=[]
-        print("Please input the filter items, separated with Space and end with Enter.")
-        for factor in self.feature_list:
-            print("The omitted value of factor \"{}\" is:".format(factor))
-            temp=input()
-            values=[]
-            while values==[]:
-                try:
-                    values=temp.split(" ")
-                except:
-                    print("wrong format, please split the multi-value with space")
-                    temp=input()
-            for value in values:
-                if value==''or value=='\n':
-                    continue
-                else:
-                    self.omit.append(str(factor)+'=='+str(value))
-        print("The filter items are:")
-        print(self.omit)
-
-    def candidate_rules(self,decision_label,consistency,cutoff,rule_length=5):
-        if self.caseid !=None and self.caseid in self.feature_list:
-            self.feature_list.remove(self.caseid)
-        if self.decision_name in self.feature_list:
-            self.feature_list.remove(self.decision_name)
-        self.decision_label=decision_label
+    def candidate_rules(self,decision_label, feature_list,consistency,cutoff,rule_length=5):
+        if self.caseid !=None and self.caseid in feature_list:
+            feature_list.remove(self.caseid)
+        if self.decision_name in feature_list:
+            feature_list.remove(self.decision_name)
+        
         issues=len(self.data.loc[(self.data[self.decision_name]==decision_label)])
         candidate=[]
-        for i in self.__search_combination(self.feature_list):
-            if 1<len(i)<rule_length:
+        for i in self.__search_combination(feature_list):
+            if len(i)<=rule_length:
                 candidate.append(i)  
-        print("Running...please wait. There are {} candidate combinations.".format(len(candidate)))
+        print("Running...please wait. There are {} factor combinations.".format(len(candidate)))
         rules=[]
         for i in range(len(candidate)):
             length=len(candidate[i])
@@ -211,24 +180,23 @@ class scpQCA:
                 for j in range(length):
                     Q+=str(candidate[i][j])+'=='+str(values[r][j])+' & '
                 Q=Q[:-3]
-                # print(Q)
-                flag=False
-                for n in self.necessity+self.omit:
+
+                flag=True if (Q=='' or len(self.data.query(Q))==0) else False
+                for n in self.necessity[decision_label]:
                     if n in Q:
-                        # print(n)
                         flag=True
+                if flag:
+                    continue
+                   
                 result=self.data.query(Q)
                 p=result[self.decision_name].value_counts(normalize = True, dropna = False)
-                if len(result)==0 or flag:
-                    # print(len(result),flag)
-                    pass
-                elif p.idxmax()==self.decision_label and p[p.idxmax()]>=consistency and p[p.idxmax()]*len(result)>=cutoff: 
-                        row=[Q,p[p.idxmax()]*len(result)/issues,p[p.idxmax()]] # coverage, consistency
-                        rules.append(row)
+                if p.idxmax()==decision_label and p[p.idxmax()]>=consistency and p[p.idxmax()]*len(result)>=cutoff: 
+                    row=[Q,p[p.idxmax()]*len(result)/issues,p[p.idxmax()]] # coverage, consistency
+                    rules.append(row)
         print("There are {} candidate rules in total.".format(len(rules)))
         return rules
 
-    def __check_subset(self, new_rule, rules, unique_cover=2):
+    def __check_subset(self, decision_label, new_rule, rules, unique_cover=2):
         final_rules=copy.deepcopy(rules)
         final_rules.append(new_rule)
         rules=[]
@@ -237,11 +205,11 @@ class scpQCA:
             set_B=set()
             for j in range(i+1,len(final_rules)):
                 temp=self.data.query(final_rules[j])
-                index=set(temp[temp[self.decision_name] == self.decision_label].index.tolist())
+                index=set(temp[temp[self.decision_name] == decision_label].index.tolist())
                 set_B=set_B.union(index)
                 temp[self.decision_name].value_counts(normalize = False, dropna = True)
             temp=self.data.query(final_rules[i])
-            index=set(temp[temp[self.decision_name] == self.decision_label].index.tolist())
+            index=set(temp[temp[self.decision_name] == decision_label].index.tolist())
             if len(index.difference(set_B.union(set_A)))<unique_cover:
                 pass
             else:
@@ -249,59 +217,41 @@ class scpQCA:
                 set_A=set_A.union(index)      
         return rules, set_A
 
-    def greedy(self,rules,decision_label,rule_length=5,consistency=0.8,cutoff=2,unique_cover=2):
+    def greedy(self,rules,decision_label,unique_cover=2):
         if rules==[]:
-            _=self.search_necessity(decision_label=decision_label)
-            rules=self.candidate_rules(decision_label,consistency,cutoff,rule_length)
-        rules=sorted(rules, key=lambda raw: raw[2],reverse=True)
-        rules=sorted(rules, key=lambda raw: raw[1],reverse=True)
-        event_set=set()
+            print("The candidate rule list is empty.")
+            return [],set()
+
+        final_set=set()
         final_rule=[]
         for i in range(len(rules)):
-            temp_final_rule, temp_set=self.__check_subset(rules[i][0], final_rule, unique_cover)
-            if len(temp_set)>len(event_set):
-                final_rule, event_set=temp_final_rule, temp_set
+            temp_final_rule, temp_set=self.__check_subset(decision_label,rules[i][0], final_rule, unique_cover)
+            if len(temp_set)>len(final_set):
+                final_rule, final_set=temp_final_rule, temp_set
         if len(final_rule)==0:
             return [],set()
         for i in range(len(final_rule)):
-            for j in range(len(self.necessity)):
-                final_rule[i]=final_rule[i]+' & '+self.necessity[j]
+            for j in range(len(self.necessity[decision_label])):
+                final_rule[i]=final_rule[i]+' & '+self.necessity[decision_label][j]
         final_set=set()
         for rule in final_rule:
             cases=self.data.query(rule)
-            final_set=final_set.union(set(list(cases[cases[self.decision_name] == self.decision_label][self.caseid])))
+            final_set=final_set.union(set(list(cases[cases[self.decision_name] == decision_label].index)))
         return final_rule, final_set
 
-
-    def cov_n_con(self,configuration,issue_sets):
+    def cov_n_con(self, decision_label,configuration,issue_sets):
         if issue_sets==set():
             print("consistency = {} and coverage = {}".format(0.0,0.0))
-        coverage=len(issue_sets)/len(self.data[self.data[self.decision_name] == self.decision_label]) if len(self.data[self.data[self.decision_name] == self.decision_label])!=0 else 0
+        coverage=len(issue_sets)/len(self.data[self.data[self.decision_name] == decision_label]) if len(self.data[self.data[self.decision_name] == decision_label])!=0 else 0
         consistency1=set()
         consistency2=set()
         for rule in configuration:
             temp=self.data.query(rule)
-            consistency1=consistency1.union(set(temp[temp[self.decision_name]==self.decision_label].index.tolist()))
-            consistency2=consistency2.union(set(temp[temp[self.decision_name]!=self.decision_label].index.tolist()))
-        consistency=len(consistency1)/(len(consistency1)+len(consistency2)) if len(consistency1)+len(consistency2)!=0 else 0
+            consistency1=consistency1.union(set(temp[temp[self.decision_name]==decision_label].index.tolist()))
+            consistency2=consistency2.union(set(temp[temp[self.decision_name]!=decision_label].index.tolist()))
+        consistency=len(consistency1)/(len(consistency1)+len(consistency2))
         print("consistency = {} and coverage = {}".format(consistency,coverage))
-
-    def runQCA(self, optimization, decision_label, rule_length=5, consistency=0.8,cutoff=2,unique_cover=2):
-        self.decision_label=decision_label
-        if self.caseid !=None and self.caseid in self.feature_list:
-            self.feature_list.remove(self.caseid)
-        if self.decision_name in self.feature_list:
-            self.feature_list.remove(self.decision_name)  
-        if optimization=="greedy":
-            return self.greedy([],decision_label,rule_length=rule_length,consistency=consistency,cutoff=cutoff,unique_cover=unique_cover)
-        elif optimization=="MFMC":
-            return  self.MFMC([],decision_label,rule_length=rule_length,consistency=consistency,cutoff=cutoff,unique_cover=unique_cover)
-        elif optimization=="SimAnnealing":
-            return self.simannealing([],decision_label,rule_length=rule_length,consistency=consistency,cutoff=cutoff)
-        elif optimization=="qma":
-            return self.QuineMccluskey(decision_label,consistency=consistency,cutoff=cutoff)
-        else:
-            print("Wrong optimization key!")
+        return consistency*coverage
 
     def comparison(self, data, feature_list, round, random_num, optimization, caseid, decision_name, rule_length, consistency=0.8,cutoff=2,unique_cover=2, index_list=[]):
         code1,code2,code3,code4=0,0,0,0
@@ -412,52 +362,24 @@ class scpQCA:
         print(np.var(lr),np.var(dtr),np.var(ratio1),np.var(ratio5))
         return
 
-# if __name__=="__main__":
-    # data=pd.read_csv("E:\CCDA\papers\SCP-QCA\Rutten\RE_ Further questions on the openness dataset\\new_calibration.csv")
-    # obj1=scpQCA(data=data, feature_list=list(data.columns), decision_name='reginnovation', caseid='case')
-    # obj1.indirect_calibration(2)
-    # print(obj1.data)
-    # obj1.search_necessity(decision_label=1,consistency_threshold=0.9)
-    # obj1.filter()
-    # rules=obj1.candidate_rules(decision_label=1,consistency=0.8,cutoff=5,rule_length=5)
-    # obj1.scp_truth_table(rules=rules,decision_label=1)
-    # configuration,issue_set=obj1.greedy(rules,decision_label=1,unique_cover=5)
-    # print(configuration)
-    # print(issue_set)
-    # obj1.cov_n_con(configuration=configuration,issue_sets=issue_set)
+if __name__=="__main__":
+    data=[[random.randint(0,100) for _ in range(6)] for _ in range(30)]
+    data=pd.DataFrame(data)
+    data.columns=['A','B','C','D','F','cases']
+    obj=scpQCA(data,decision_name='F',caseid='cases')
+    feature_list=['A','B','C','D','F','cases']
 
-    # data=pd.read_csv("E:\CCDA\papers\SCP-QCA\\two-step QCA\\format.csv")
-    # obj1=scpQCA(data=data, feature_list=list(data.columns), decision_name='LC', caseid='cases')
-    # obj1.indirect_calibration(2)
-    # # print(obj1.data)
-    # obj1.search_necessity(decision_label=1,consistency_threshold=0.9)
-    # obj1.filter()
-    # rules=obj1.candidate_rules(decision_label=1,consistency=0.8,cutoff=2,rule_length=5)
-    # obj1.scp_truth_table(rules=rules,decision_label=1)
-    # configuration,issue_set=obj1.greedy(rules,decision_label=1,unique_cover=1)
-    # print(configuration)
-    # print(issue_set)
-    # obj1.cov_n_con(configuration=configuration,issue_sets=issue_set)
-#     data=[[random.randint(0,100) for _ in range(6)] for _ in range(30)]
-#     data=pd.DataFrame(data)
-#     data.columns=['A','B','C','D','F','cases']
-#     obj=scpQCA(data,['A','B','C','D','F'],decision_name='F',caseid='cases')
-#     # obj=scpQCA.scpQCA(data,['A','B','C','D','E','F','G','H','I'],decision_name='F',caseid='cases')
-#     # obj.direct_calibration(90,50,10)
-#     obj.indirect_calibration(2,100,0)
-#     print(obj.data)
-#     obj.raw_truth_table(1,cutoff=1,sortedby=True)
+    obj.indirect_calibration(feature_list,2,100,0)
 
-#     obj.search_necessity(decision_label=1,consistency_threshold=0.9)
 
-#     rules=obj.candidate_rules(1,0.8,1)
+    obj.search_necessity(decision_label=1, feature_list=feature_list,consistency_threshold=0.8)
 
-#     obj.scp_truth_table(rules,1)
+    rules=obj.candidate_rules(decision_label=1, feature_list=feature_list, consistency=0.8,cutoff=1)
 
-#     configuration,issue_set=obj.QuineMccluskey(decision_label=1,consistency=0.8,cutoff=1)
-#     print(configuration)
-#     print(issue_set)
+    obj.scp_truth_table(rules, feature_list=feature_list,decision_label=1)
 
-#     obj.cov_n_con(configuration,issue_set)
-#     sample_index, dtr, lr, code=obj.comparison(data,10,3,"greedy",'cases','F',5,0.8,1,1)
-#     obj.draw_plt(dtr, lr, code,10)
+    configuration,issue_set=obj.greedy(rules=rules,decision_label=1,unique_cover=2)
+    print(configuration)
+    print(issue_set)
+
+    print(obj.cov_n_con(decision_label=1, configuration=configuration,issue_sets=issue_set))
