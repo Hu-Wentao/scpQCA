@@ -1,0 +1,18 @@
+Metadata-Version: 2.1
+Name: scpQCA
+Version: 0.1.0
+Summary: a new and more powerful QCA algorithm
+Author: Manqing FU
+Author-email: fumanqing@outlook.com
+License: Apache 2.0
+Platform: all
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# scpQCA
+
+This is a new and more powerful algorithm.
+
+The source code could find in https://github.com/Kim-Q/scpQCA.git, please obey the Apache-2.0 license.

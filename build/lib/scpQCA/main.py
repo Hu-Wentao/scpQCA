@@ -243,7 +243,6 @@ class scpQCA:
     def cov_n_con(self, decision_label,configuration,issue_sets):
         if issue_sets==set():
             print("consistency = {} and coverage = {}".format(0.0,0.0))
-            return 0
         coverage=len(issue_sets)/len(self.data[self.data[self.decision_name] == decision_label]) if len(self.data[self.data[self.decision_name] == decision_label])!=0 else 0
         consistency1=set()
         consistency2=set()
@@ -394,18 +393,17 @@ if __name__=="__main__":
 
     obj.indirect_calibration(feature_list,2,100,0)
 
-    # configuration,issue_set=obj.runQCA(decision_label=1, feature_list=feature_list, necessary_consistency=[0.8,0.9],sufficiency_consistency=[0.75,0.8],cutoff=[1,2],rule_length=5,unique_cover=[1])
+    configuration,issue_set=obj.runQCA(decision_label=1, feature_list=feature_list, necessary_consistency=[0.8,0.9],sufficiency_consistency=[0.75,0.8],cutoff=[1,2],rule_length=5,unique_cover=[1])
 
 
-    obj.search_necessity(decision_label=1, feature_list=feature_list,consistency_threshold=0.6)
+    # obj.search_necessity(decision_label=1, feature_list=feature_list,consistency_threshold=0.8)
 
-    rules=obj.candidate_rules(decision_label=1, feature_list=feature_list, consistency=0.6,cutoff=1)
+    # rules=obj.candidate_rules(decision_label=1, feature_list=feature_list, consistency=0.8,cutoff=1)
 
-    # obj.raw_truth_table(decision_label=1, feature_list=feature_list, cutoff=1,consistency_threshold=0.6,sortedby=False)
-    obj.scp_truth_table(rules, feature_list=feature_list,decision_label=1)
+    # obj.scp_truth_table(rules, feature_list=feature_list,decision_label=1)
 
     # configuration,issue_set=obj.greedy(rules=rules,decision_label=1,unique_cover=2)
-    # print(configuration)
-    # print(issue_set)
+    print(configuration)
+    print(issue_set)
 
-    # obj.cov_n_con(decision_label=1, configuration=configuration,issue_sets=issue_set)
+    print(obj.cov_n_con(decision_label=1, configuration=configuration,issue_sets=issue_set))
