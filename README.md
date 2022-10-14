@@ -114,19 +114,19 @@ Otherwises, we also recommand you to use a more convenience function to test the
 ## runQCA
 
 ```
-    data=[[random.randint(0,100) for _ in range(6)] for _ in range(30)]
-    data=pd.DataFrame(data)
-    data.columns=['A','B','C','D','F','cases']
-    obj=scpQCA(data,decision_name='F',caseid='cases')
+data=[[random.randint(0,100) for _ in range(6)] for _ in range(30)]
+data=pd.DataFrame(data)
+data.columns=['A','B','C','D','F','cases']
+obj=scpQCA(data,decision_name='F',caseid='cases')
 
-    feature_list=['A','B','C','D','F','cases']
-    obj.indirect_calibration(feature_list,2,100,0)
+feature_list=['A','B','C','D','F','cases']
+obj.indirect_calibration(feature_list,2,100,0)
 
-    configuration,issue_set=obj.runQCA(decision_label=1, feature_list=feature_list, necessary_consistency=[0.8,0.9],sufficiency_consistency=[0.75,0.8],cutoff=[1,2],rule_length=5,unique_cover=[1])
+configuration,issue_set=obj.runQCA(decision_label=1, feature_list=feature_list, necessary_consistency=[0.8,0.9],sufficiency_consistency=[0.75,0.8],cutoff=[1,2],rule_length=5,unique_cover=[1])
 
-    print(configuration)
-    print(issue_set)
-    print(obj.cov_n_con(decision_label=1, configuration=configuration,issue_sets=issue_set))
+print(configuration)
+print(issue_set)
+print(obj.cov_n_con(decision_label=1, configuration=configuration,issue_sets=issue_set))
 
 ###
 Running...please wait. There are 16 factor combinations.
