@@ -1,11 +1,11 @@
-import pandas as pd
-import numpy as np
-import itertools
 import copy
+import itertools
 import random
+
 import matplotlib.pyplot as plt
-from sklearn import tree
-from sklearn import linear_model
+import numpy as np
+import pandas as pd
+from sklearn import linear_model, tree
 
 
 class scpQCA:
@@ -162,7 +162,7 @@ class scpQCA:
         if self.decision_name in feature_list:
             feature_list.remove(self.decision_name)
         
-        issues=len(self.data.loc[(self.data[self.decision_name]==decision_label)])
+        # issues=len(self.data.loc[(self.data[self.decision_name]==decision_label)])
         candidate=[]
         for i in self.__search_combination(feature_list):
             if len(i)<=rule_length:
@@ -190,8 +190,9 @@ class scpQCA:
                    
                 result=self.data.query(Q)
                 p=result[self.decision_name].value_counts(normalize = True, dropna = False)
-                if p.idxmax()==decision_label and p[p.idxmax()]>=consistency and p[p.idxmax()]*len(result)>=cutoff: 
-                    row=[Q,p[p.idxmax()]*len(result)/issues,p[p.idxmax()]] # coverage, consistency
+                # if p.idxmax()==decision_label and p[p.idxmax()]>=consistency and p[p.idxmax()]*len(result)>=cutoff: 
+                if p.idxmax()==decision_label and p[p.idxmax()]>=consistency and len(result[result[self.decision_name]==decision_label])>=cutoff: 
+                    row=[Q,len(result[result[self.decision_name]==decision_label]),p[p.idxmax()]] # cutoff, consistency
                     rules.append(row)
         print("There are {} candidate rules in total.".format(len(rules)))
         return rules
@@ -218,7 +219,7 @@ class scpQCA:
         return rules, set_A
 
     def greedy(self,rules,decision_label,unique_cover=2):
-        if rules==[]:
+        if len(rules)==0:
             print("The candidate rule list is empty.")
             return [],set()
 
@@ -252,6 +253,27 @@ class scpQCA:
         consistency=len(consistency1)/(len(consistency1)+len(consistency2))
         print("consistency = {} and coverage = {}".format(consistency,coverage))
         return consistency*coverage
+
+    def runQCA(self, decision_label, feature_list, necessary_consistency:list, sufficiency_consistency:list, cutoff:list, rule_length:int, unique_cover:list):
+        self.necessity[decision_label]=[]
+        total_rules=self.candidate_rules(decision_label=decision_label, feature_list=feature_list, consistency=min(sufficiency_consistency), cutoff=min(cutoff), rule_length=rule_length)
+        pd_rules=pd.DataFrame(total_rules,columns=["candidate_rule","cutoff","consistency"]).sort_values(by=["cutoff","consistency"],ascending=False)
+        Cartesian=[necessary_consistency,sufficiency_consistency,cutoff,unique_cover]
+        values=[d for d in itertools.product(*Cartesian)]
+        final_config, final_set, config_value=[],set(),0
+        v=[]
+        for i in range(len(values)):
+            self.search_necessity(decision_label=decision_label,feature_list=feature_list,consistency_threshold=values[i][0])
+            rules=pd_rules[(pd_rules['consistency']>=values[i][1]) & (pd_rules['cutoff']>=values[i][2])]
+            print("processing the simplification with para: necessary consistency={}, sufficiency consistency={}, cutoff={}, unique cover={}".format(values[i][0],values[i][1], values[i][2], values[i][3]))
+            config, sets=self.greedy(rules.values.tolist(), decision_label=decision_label, unique_cover=values[i][3])
+            con_cov=self.cov_n_con(decision_label=decision_label, configuration=config, issue_sets=sets)
+            if con_cov>config_value:
+                final_config,final_set=config, sets
+                config_value=con_cov
+                v=values[i]
+        print("The best opt parameter of scpQCA is: necessary consistency={}, sufficiency consistency={}, cutoff={}, unique cover={}".format(v[0],v[1], v[2], v[3]))
+        return final_config, final_set
 
     def comparison(self, data, feature_list, round, random_num, optimization, caseid, decision_name, rule_length, consistency=0.8,cutoff=2,unique_cover=2, index_list=[]):
         code1,code2,code3,code4=0,0,0,0
@@ -371,14 +393,16 @@ if __name__=="__main__":
 
     obj.indirect_calibration(feature_list,2,100,0)
 
+    configuration,issue_set=obj.runQCA(decision_label=1, feature_list=feature_list, necessary_consistency=[0.8,0.9],sufficiency_consistency=[0.75,0.8],cutoff=[1,2],rule_length=5,unique_cover=[1])
 
-    obj.search_necessity(decision_label=1, feature_list=feature_list,consistency_threshold=0.8)
 
-    rules=obj.candidate_rules(decision_label=1, feature_list=feature_list, consistency=0.8,cutoff=1)
+    # obj.search_necessity(decision_label=1, feature_list=feature_list,consistency_threshold=0.8)
 
-    obj.scp_truth_table(rules, feature_list=feature_list,decision_label=1)
+    # rules=obj.candidate_rules(decision_label=1, feature_list=feature_list, consistency=0.8,cutoff=1)
 
-    configuration,issue_set=obj.greedy(rules=rules,decision_label=1,unique_cover=2)
+    # obj.scp_truth_table(rules, feature_list=feature_list,decision_label=1)
+
+    # configuration,issue_set=obj.greedy(rules=rules,decision_label=1,unique_cover=2)
     print(configuration)
     print(issue_set)
 

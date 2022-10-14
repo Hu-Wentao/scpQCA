@@ -1,9 +1,5 @@
 # scpQCA
 
-This is a QCA package used for 
+This is a new and more powerful algorithm.
 
-This is a simple example package. You can use
-
-[contact the developer](fumanqing@outlook.com)
-
-to write your content.
+The source code could find in https://github.com/Kim-Q/scpQCA.git, please obey the Apache-2.0 license.
