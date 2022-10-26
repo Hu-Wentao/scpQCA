@@ -1,11 +1,13 @@
 import copy
 import itertools
 import random
+import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn import linear_model, tree
+
 
 
 class scpQCA:
@@ -262,147 +264,149 @@ class scpQCA:
         Cartesian=[necessary_consistency,sufficiency_consistency,cutoff,unique_cover]
         values=[d for d in itertools.product(*Cartesian)]
         final_config, final_set, config_value=[],set(),0
-        v=[]
+        v,l=[],sys.maxsize
         for i in range(len(values)):
             self.search_necessity(decision_label=decision_label,feature_list=feature_list,consistency_threshold=values[i][0])
             rules=pd_rules[(pd_rules['consistency']>=values[i][1]) & (pd_rules['cutoff']>=values[i][2])]
             print("processing the simplification with para: necessary consistency={}, sufficiency consistency={}, cutoff={}, unique cover={}".format(values[i][0],values[i][1], values[i][2], values[i][3]))
             config, sets=self.greedy(rules.values.tolist(), decision_label=decision_label, unique_cover=values[i][3])
             con_cov=self.cov_n_con(decision_label=decision_label, configuration=config, issue_sets=sets)
-            if con_cov>config_value:
+            if con_cov>config_value or (con_cov==config_value and len(config)<l):
+                print("changed")
                 final_config,final_set=config, sets
                 config_value=con_cov
                 v=values[i]
+                l=len(config)
         print("The best opt parameter of scpQCA is: necessary consistency={}, sufficiency consistency={}, cutoff={}, unique cover={}".format(v[0],v[1], v[2], v[3]))
         return final_config, final_set
 
-    def comparison(self, data, feature_list, round, random_num, optimization, caseid, decision_name, rule_length, consistency=0.8,cutoff=2,unique_cover=2, index_list=[]):
-        code1,code2,code3,code4=0,0,0,0
-        dtr_score=[]
-        lr_score=[]
-        samply_index=[]
-        code_result=[]
-        for i in range(round):
-            random_index=set()
-            if index_list!=[]:
-                random_index=set(index_list[i])
-            else:
-                for _ in range(int(random_num)):
-                    random_index.add(random.randint(0,len(data)-1))
-            print("The sample cases are:", random_index)
-            samply_index.append(len(random_index))
-            data_test=data.drop(list(random_index))
-            if self.caseid !=None and self.caseid in feature_list:
-                feature_list.remove(self.caseid)
-            if self.decision_name in feature_list:
-                feature_list.remove(self.decision_name)
-            model = tree.DecisionTreeClassifier(max_depth=rule_length, min_samples_split=int(1/(1-consistency)), min_samples_leaf=cutoff)#Decision Tree Regression
-            model.fit(data_test[feature_list],data_test[decision_name])
-            score=model.score(data.loc[random_index,feature_list],data.loc[random_index,decision_name])
-            dtr_score.append(score)
-            print(model.predict(data.loc[random_index,feature_list]))
-            print("Decision Tree's prediction precision is:",score)
-            model = linear_model.LogisticRegression()# Linear Regression
-            model.fit(data_test[feature_list],data_test[decision_name])
-            score=model.score(data.loc[random_index,feature_list],data.loc[random_index,decision_name])
-            lr_score.append(score)
-            print(model.predict(data.loc[random_index,feature_list]))
-            print("Linear Regression's prediction precision is:",score)
-            result=list(data[decision_name].unique())
-            rules,sets=[],[]
-            for i in range(len(result)):
-                obj=scpQCA(data_test,feature_list,decision_name,caseid)
-                # obj.search_necessity(result[i])
-                temp_rules,_=obj.runQCA(optimization,result[i], rule_length, consistency, cutoff, unique_cover)
-                rules.append(temp_rules)
-                sets.append(set())
-                for rule in temp_rules:
-                    sets[i]=sets[i].union(set(list(data.query(rule).index)))
-            print(rules,sets)
-            print("scpQCA's prediction solutions are:")
-            for random_i in random_index:
-                i=result.index(data.iloc[random_i][decision_name])
-                right_set=sets[i]
-                wrong_set=set()
-                for j in range(len(result)):
-                    if j!=i:
-                        wrong_set=wrong_set.union(sets[j])
-                if random_i in right_set and random_i not in wrong_set:
-                    print("perfectly correct!")
-                    code1+=1
-                elif random_i in right_set and random_i in wrong_set:
-                    print("confusion mistake!")
-                    code2+=1
-                elif random_i not in right_set and random_i in wrong_set:
-                    print("totally mistake!")
-                    code3+=1
-                else:
-                    print("not found")
-                    code4+=1
-            code_result.append([code1,code2,code3,code4])
-            print()
-        print("Decision Tree's results are:","model score=",dtr_score)
-        print("Linear Regression's results are:","model score=",lr_score)
-        print("The 4 solution codes are: perfectly correct!, confusion mistake!, totally mistake!, not found")
-        print("scpQCA's solution codes are:",code_result)
-        return samply_index,dtr_score,lr_score,code_result
+    # def comparison(self, data, feature_list, round, random_num, optimization, caseid, decision_name, rule_length, consistency=0.8,cutoff=2,unique_cover=2, index_list=[]):
+    #     code1,code2,code3,code4=0,0,0,0
+    #     dtr_score=[]
+    #     lr_score=[]
+    #     samply_index=[]
+    #     code_result=[]
+    #     for i in range(round):
+    #         random_index=set()
+    #         if index_list!=[]:
+    #             random_index=set(index_list[i])
+    #         else:
+    #             for _ in range(int(random_num)):
+    #                 random_index.add(random.randint(0,len(data)-1))
+    #         print("The sample cases are:", random_index)
+    #         samply_index.append(len(random_index))
+    #         data_test=data.drop(list(random_index))
+    #         if self.caseid !=None and self.caseid in feature_list:
+    #             feature_list.remove(self.caseid)
+    #         if self.decision_name in feature_list:
+    #             feature_list.remove(self.decision_name)
+    #         model = tree.DecisionTreeClassifier(max_depth=rule_length, min_samples_split=int(1/(1-consistency)), min_samples_leaf=cutoff)#Decision Tree Regression
+    #         model.fit(data_test[feature_list],data_test[decision_name])
+    #         score=model.score(data.loc[random_index,feature_list],data.loc[random_index,decision_name])
+    #         dtr_score.append(score)
+    #         print(model.predict(data.loc[random_index,feature_list]))
+    #         print("Decision Tree's prediction precision is:",score)
+    #         model = linear_model.LogisticRegression()# Linear Regression
+    #         model.fit(data_test[feature_list],data_test[decision_name])
+    #         score=model.score(data.loc[random_index,feature_list],data.loc[random_index,decision_name])
+    #         lr_score.append(score)
+    #         print(model.predict(data.loc[random_index,feature_list]))
+    #         print("Linear Regression's prediction precision is:",score)
+    #         result=list(data[decision_name].unique())
+    #         rules,sets=[],[]
+    #         for i in range(len(result)):
+    #             obj=scpQCA(data_test,feature_list,decision_name,caseid)
+    #             # obj.search_necessity(result[i])
+    #             temp_rules,_=obj.runQCA(optimization,result[i], rule_length, consistency, cutoff, unique_cover)
+    #             rules.append(temp_rules)
+    #             sets.append(set())
+    #             for rule in temp_rules:
+    #                 sets[i]=sets[i].union(set(list(data.query(rule).index)))
+    #         print(rules,sets)
+    #         print("scpQCA's prediction solutions are:")
+    #         for random_i in random_index:
+    #             i=result.index(data.iloc[random_i][decision_name])
+    #             right_set=sets[i]
+    #             wrong_set=set()
+    #             for j in range(len(result)):
+    #                 if j!=i:
+    #                     wrong_set=wrong_set.union(sets[j])
+    #             if random_i in right_set and random_i not in wrong_set:
+    #                 print("perfectly correct!")
+    #                 code1+=1
+    #             elif random_i in right_set and random_i in wrong_set:
+    #                 print("confusion mistake!")
+    #                 code2+=1
+    #             elif random_i not in right_set and random_i in wrong_set:
+    #                 print("totally mistake!")
+    #                 code3+=1
+    #             else:
+    #                 print("not found")
+    #                 code4+=1
+    #         code_result.append([code1,code2,code3,code4])
+    #         print()
+    #     print("Decision Tree's results are:","model score=",dtr_score)
+    #     print("Linear Regression's results are:","model score=",lr_score)
+    #     print("The 4 solution codes are: perfectly correct!, confusion mistake!, totally mistake!, not found")
+    #     print("scpQCA's solution codes are:",code_result)
+    #     return samply_index,dtr_score,lr_score,code_result
 
-    def draw_plt(self, dtr_score, lr_score, code_result, round):
-        dtr=dtr_score
-        lr=lr_score
-        code=code_result
-        code1,code2,code3,code4=[code[0][0],],[code[0][1],],[code[0][2],],[code[0][3],]
-        for i in range(1,len(code)):
-            code1.append(code[i][0]-code[i-1][0])
-            code2.append(code[i][1]-code[i-1][1])
-            code3.append(code[i][2]-code[i-1][2])
-            code4.append(code[i][3]-code[i-1][3])
-        print(code1,code2,code3,code4)
-        ratio1,ratio2,ratio3,ratio4,ratio5=[],[],[],[],[]
-        for i in range(round):
-            ratio1.append(code1[i]/(code1[i]+code2[i]+code3[i]+code4[i]))
-            ratio2.append(code2[i]/(code1[i]+code2[i]+code3[i]+code4[i]))
-            ratio3.append(code3[i]/(code1[i]+code2[i]+code3[i]+code4[i]))
-            ratio4.append(code4[i]/(code1[i]+code2[i]+code3[i]+code4[i]))
-            ratio5.append(code1[i]/(code1[i]+code2[i]+code3[i]))
-        x=range(len(lr))
-        plt.figure(figsize=(12,8))
-        plt.gcf().set_facecolor(np.ones(3)* 240 / 255)
-        plt.grid()
-        plt.plot(x, dtr, marker='.', ms=10, label="decision tree regression")
-        plt.plot(x, lr, marker='.', ms=10, label="linear regression")
-        plt.plot(x, ratio1, marker='.', ms=10, label="perfectly correct")
-        plt.plot(x, ratio5, marker='.', ms=10, label="perfectly correct(except not found)")
-        plt.xticks(rotation=45)
-        plt.ylim(0,1)
-        plt.xlabel("case number")
-        plt.ylabel("ratio")
-        plt.legend(loc="upper left")
-        plt.show()
-        print("The mean of Linear Regression, Decision Tree, perfect correct and perfectly correct(except not found) are:")
-        print(np.mean(lr),np.mean(dtr),np.mean(ratio1),np.mean(ratio5))
-        print("The variance of Linear Regression, Decision Tree, perfect correct and perfectly correct(except not found) are:")
-        print(np.var(lr),np.var(dtr),np.var(ratio1),np.var(ratio5))
-        return
+    # def draw_plt(self, dtr_score, lr_score, code_result, round):
+    #     dtr=dtr_score
+    #     lr=lr_score
+    #     code=code_result
+    #     code1,code2,code3,code4=[code[0][0],],[code[0][1],],[code[0][2],],[code[0][3],]
+    #     for i in range(1,len(code)):
+    #         code1.append(code[i][0]-code[i-1][0])
+    #         code2.append(code[i][1]-code[i-1][1])
+    #         code3.append(code[i][2]-code[i-1][2])
+    #         code4.append(code[i][3]-code[i-1][3])
+    #     print(code1,code2,code3,code4)
+    #     ratio1,ratio2,ratio3,ratio4,ratio5=[],[],[],[],[]
+    #     for i in range(round):
+    #         ratio1.append(code1[i]/(code1[i]+code2[i]+code3[i]+code4[i]))
+    #         ratio2.append(code2[i]/(code1[i]+code2[i]+code3[i]+code4[i]))
+    #         ratio3.append(code3[i]/(code1[i]+code2[i]+code3[i]+code4[i]))
+    #         ratio4.append(code4[i]/(code1[i]+code2[i]+code3[i]+code4[i]))
+    #         ratio5.append(code1[i]/(code1[i]+code2[i]+code3[i]))
+    #     x=range(len(lr))
+    #     plt.figure(figsize=(12,8))
+    #     plt.gcf().set_facecolor(np.ones(3)* 240 / 255)
+    #     plt.grid()
+    #     plt.plot(x, dtr, marker='.', ms=10, label="decision tree regression")
+    #     plt.plot(x, lr, marker='.', ms=10, label="linear regression")
+    #     plt.plot(x, ratio1, marker='.', ms=10, label="perfectly correct")
+    #     plt.plot(x, ratio5, marker='.', ms=10, label="perfectly correct(except not found)")
+    #     plt.xticks(rotation=45)
+    #     plt.ylim(0,1)
+    #     plt.xlabel("case number")
+    #     plt.ylabel("ratio")
+    #     plt.legend(loc="upper left")
+    #     plt.show()
+    #     print("The mean of Linear Regression, Decision Tree, perfect correct and perfectly correct(except not found) are:")
+    #     print(np.mean(lr),np.mean(dtr),np.mean(ratio1),np.mean(ratio5))
+    #     print("The variance of Linear Regression, Decision Tree, perfect correct and perfectly correct(except not found) are:")
+    #     print(np.var(lr),np.var(dtr),np.var(ratio1),np.var(ratio5))
+    #     return
 
 if __name__=="__main__":
-    data=[[random.randint(0,100) for _ in range(6)] for _ in range(30)]
+    data=[[random.randint(0,100) for _ in range(7)] for _ in range(60)]
     data=pd.DataFrame(data)
-    data.columns=['A','B','C','D','F','cases']
+    data.columns=['A','B','C','D','E','F','cases']
     obj=scpQCA(data,decision_name='F',caseid='cases')
-    feature_list=['A','B','C','D','F','cases']
+    feature_list=['A','B','C','D','E','F','cases']
 
     obj.indirect_calibration(feature_list,2,100,0)
 
-    # configuration,issue_set=obj.runQCA(decision_label=1, feature_list=feature_list, necessary_consistency=[0.8,0.9],sufficiency_consistency=[0.75,0.8],cutoff=[1,2],rule_length=5,unique_cover=[1])
+    configuration,issue_set=obj.runQCA(decision_label=1, feature_list=feature_list, necessary_consistency=[0.8,0.9],sufficiency_consistency=[0.75,0.8],cutoff=[1,2],rule_length=5,unique_cover=[1])
+    print(configuration, issue_set)
 
+    # obj.search_necessity(decision_label=1, feature_list=feature_list,consistency_threshold=0.6)
 
-    obj.search_necessity(decision_label=1, feature_list=feature_list,consistency_threshold=0.6)
-
-    rules=obj.candidate_rules(decision_label=1, feature_list=feature_list, consistency=0.6,cutoff=1)
+    # rules=obj.candidate_rules(decision_label=1, feature_list=feature_list, consistency=0.6,cutoff=1)
 
     # obj.raw_truth_table(decision_label=1, feature_list=feature_list, cutoff=1,consistency_threshold=0.6,sortedby=False)
-    obj.scp_truth_table(rules, feature_list=feature_list,decision_label=1)
+    # obj.scp_truth_table(rules, feature_list=feature_list,decision_label=1)
 
     # configuration,issue_set=obj.greedy(rules=rules,decision_label=1,unique_cover=2)
     # print(configuration)

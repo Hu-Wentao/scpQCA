@@ -8,7 +8,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
  
 setuptools.setup(
     name="scpQCA",
-    version="0.1.1",
+    version="0.1.2",
     author="Manqing FU",
     author_email="fumanqing@outlook.com",
     description="a new and more powerful QCA algorithm",
@@ -16,7 +16,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     install_requires=['matplotlib','sklearn'], # 比如["flask>=0.10"]
     license='Apache 2.0',
-    #  url="https://www.baidu.com",
+    url="https://github.com/Kim-Q/scpQCA",
     packages=setuptools.find_packages(),
     platforms=["all"],
     classifiers=[
