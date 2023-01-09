@@ -228,6 +228,12 @@ class scpQCA:
         final_set=set()
         final_rule=[]
         for i in range(len(rules)):
+            flag=False
+            for n in self.necessity[decision_label]:
+                if n in rules[i][0]:
+                    flag=True
+            if flag:
+                continue
             temp_final_rule, temp_set=self.__check_subset(decision_label,rules[i][0], final_rule, unique_cover)
             if len(temp_set)>len(final_set):
                 final_rule, final_set=temp_final_rule, temp_set
@@ -390,17 +396,21 @@ class scpQCA:
     #     print(np.var(lr),np.var(dtr),np.var(ratio1),np.var(ratio5))
     #     return
 
-if __name__=="__main__":
-    data=[[random.randint(0,100) for _ in range(7)] for _ in range(60)]
-    data=pd.DataFrame(data)
-    data.columns=['A','B','C','D','E','F','cases']
-    obj=scpQCA(data,decision_name='F',caseid='cases')
-    feature_list=['A','B','C','D','E','F','cases']
+# if __name__=="__main__":
+#     data=pd.read_csv(r'E:\CCDA-PC\my paper\scpQCA\SMR一拒\QCA数据\WeinbergGould1993set.csv', encoding='ISO-8859-1')
+#     test=scpQCA(data,decision_name='PART',caseid='Case')
+#     configuration,issue_set=test.runQCA(decision_label=1,feature_list=list(data.columns),necessary_consistency=[0.8,0.9,1],sufficiency_consistency=[0.75,0.8,1],cutoff=[1,2],rule_length=5,unique_cover=[2])
+#     print(configuration,issue_set)
+    # data=[[random.randint(0,100) for _ in range(7)] for _ in range(60)]
+    # data=pd.DataFrame(data)
+    # data.columns=['A','B','C','D','E','F','cases']
+    # obj=scpQCA(data,decision_name='F',caseid='cases')
+    # feature_list=['A','B','C','D','E','F','cases']
 
-    obj.indirect_calibration(feature_list,2,100,0)
+    # obj.indirect_calibration(feature_list,2,100,0)
 
-    configuration,issue_set=obj.runQCA(decision_label=1, feature_list=feature_list, necessary_consistency=[0.8,0.9],sufficiency_consistency=[0.75,0.8],cutoff=[1,2],rule_length=5,unique_cover=[1])
-    print(configuration, issue_set)
+    # configuration,issue_set=obj.runQCA(decision_label=1, feature_list=feature_list, necessary_consistency=[0.8,0.9],sufficiency_consistency=[0.75,0.8],cutoff=[1,2],rule_length=5,unique_cover=[1])
+    # print(configuration, issue_set)
 
     # obj.search_necessity(decision_label=1, feature_list=feature_list,consistency_threshold=0.6)
 
