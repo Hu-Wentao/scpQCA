@@ -149,14 +149,15 @@ class scpQCA:
     def __search_combination(self, items):
         if len(items) == 0:
             return [[]]
-        subsets = []
-        first_elt = items[0] 
-        rest_list = items[1:]
-        for partial_sebset in self.__search_combination(rest_list):
-            subsets.append(partial_sebset)
-            next_subset = partial_sebset[:] +[first_elt]
-            subsets.append(next_subset)
-        return subsets
+        return self.__search_combination(items=items[1:])+[[items[0]] + r for r in self.__search_combination(items=items[1:])]
+        # subsets = []
+        # first_elt = items[0] 
+        # rest_list = items[1:]
+        # for partial_sebset in self.__search_combination(rest_list):
+        #     subsets.append(partial_sebset)
+        #     next_subset = partial_sebset[:] +[first_elt]
+        #     subsets.append(next_subset)
+        # return subsets
 
     def candidate_rules(self,decision_label, feature_list,consistency,cutoff,rule_length=5):
         if self.caseid !=None and self.caseid in feature_list:
@@ -183,11 +184,7 @@ class scpQCA:
                     Q+=str(candidate[i][j])+'=='+str(values[r][j])+' & '
                 Q=Q[:-3]
 
-                flag=True if (Q=='' or len(self.data.query(Q))==0) else False
-                for n in self.necessity[decision_label]:
-                    if n in Q:
-                        flag=True
-                if flag:
+                if Q=='' or len(self.data.query(Q))==0:
                     continue
                    
                 result=self.data.query(Q)
@@ -196,6 +193,9 @@ class scpQCA:
                 if p.idxmax()==decision_label and p[p.idxmax()]>=consistency and len(result[result[self.decision_name]==decision_label])>=cutoff: 
                     row=[Q,len(result[result[self.decision_name]==decision_label]),p[p.idxmax()]] # cutoff, consistency
                     rules.append(row)
+        rules.sort(key=lambda x:len(x[0]))
+        rules.sort(key=lambda x:x[1],reverse=True)
+        rules.sort(key=lambda x:x[2],reverse=True)
         print("There are {} candidate rules in total.".format(len(rules)))
         return rules
 
@@ -397,9 +397,14 @@ class scpQCA:
     #     return
 
 # if __name__=="__main__":
-#     data=pd.read_csv(r'E:\CCDA-PC\my paper\scpQCA\SMR一拒\QCA数据\WeinbergGould1993set.csv', encoding='ISO-8859-1')
-#     test=scpQCA(data,decision_name='PART',caseid='Case')
-#     configuration,issue_set=test.runQCA(decision_label=1,feature_list=list(data.columns),necessary_consistency=[0.8,0.9,1],sufficiency_consistency=[0.75,0.8,1],cutoff=[1,2],rule_length=5,unique_cover=[2])
+#     data=pd.read_csv(r'E:\CCDA-PC\my paper\scpQCA\SMR一拒\Bara2014set.csv', encoding='ISO-8859-1')
+#     feature_list=['groupid','polx','oust','ruler','petrol','precon','tiny','instab','xpoor','havtek','tekcon','onset']
+#     data=data[feature_list]
+#     test=scpQCA(data,decision_name='onset',caseid='groupid')
+#     test.search_necessity(1,feature_list=feature_list,consistency_threshold=0.9)
+#     rules=test.candidate_rules(decision_label=1,feature_list=feature_list,consistency=0.7,cutoff=25,rule_length=4)
+#     configuration,issue_set=test.greedy(rules=rules,decision_label=1,unique_cover=1)
+#     # configuration,issue_set=test.runQCA(decision_label=1,feature_list=list(data.columns),necessary_consistency=[0.8,0.9,1],sufficiency_consistency=[0.75,0.8,1],cutoff=[1,2],rule_length=5,unique_cover=[2])
 #     print(configuration,issue_set)
     # data=[[random.randint(0,100) for _ in range(7)] for _ in range(60)]
     # data=pd.DataFrame(data)
