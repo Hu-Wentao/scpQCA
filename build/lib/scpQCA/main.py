@@ -116,8 +116,8 @@ class scpQCA:
             row[-1]=format(len(result.loc[(result[self.decision_name]==decision_label)])/issues, '.4f') 
             df.append(row)
         # value + number + consistency + coverage
-        df=sorted(df, key=lambda raw: raw[-2],reverse=True)
-        df=sorted(df, key=lambda raw: raw[-1],reverse=True)
+        # df=sorted(df, key=lambda raw: raw[-2],reverse=True)
+        # df=sorted(df, key=lambda raw: raw[-1],reverse=True)
 
         feature_list.append('number')
         feature_list.append('consistency')
@@ -282,8 +282,7 @@ class scpQCA:
                 final_config,final_set=config, sets
                 config_value=con_cov
                 v=values[i]
-                l=len(config)
-            self.necessity[decision_label]=[]          
+                l=len(config)        
         print("The best opt parameter of scpQCA is: necessary consistency={}, sufficiency consistency={}, cutoff={}, unique cover={}".format(v[0],v[1], v[2], v[3]))
         return final_config, final_set
 

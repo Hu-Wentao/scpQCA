@@ -8,7 +8,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
  
 setuptools.setup(
     name="scpQCA",
-    version="0.1.7",
+    version="0.1.8",
     author="Manqing FU",
     author_email="fumanqing@outlook.com",
     description="a new and more powerful QCA algorithm",
