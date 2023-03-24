@@ -8,10 +8,10 @@ with open("README.md", "r", encoding="utf-8") as fh:
  
 setuptools.setup(
     name="scpQCA",
-    version="0.1.8",
-    author="Manqing FU",
+    version="0.1.10",
+    author="Kim.Q",
     author_email="fumanqing@outlook.com",
-    description="a new and more powerful QCA algorithm",
+    description="",
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=['matplotlib','sklearn'], # 比如["flask>=0.10"]
