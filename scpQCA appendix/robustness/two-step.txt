@@ -1,0 +1,154 @@
+consistency=0.8 cutoff=2 unique_cover=1 random index=2 
+test{}.csv
+
+[20, 5]
+LE==1 is a necessity condition
+ED==1 is a necessity condition
+there are 64 candidate rules
+['PV==0 & MS==0 & LE==1 & ED==1', 'LP==1 & PI==1 & MS==0 & LE==1 & ED==1'] {1, 6, 7, 9, 12, 17, 18} 7
+consistency = 1.0 and coverage = 0.875
+
+[19, 16]
+LE==1 is a necessity condition
+ED==1 is a necessity condition
+there are 63 candidate rules
+['MS==0 & MC==1 & LE==1 & ED==1', 'LP==1 & GP==0 & PI==1 & LE==1 & ED==1'] {1, 5, 6, 7, 9, 11, 12, 17, 18} 9
+consistency = 1.0 and coverage = 1.0
+
+[10, 9]
+LE==1 is a necessity condition      
+ED==1 is a necessity condition
+there are 45 candidate rules
+['LP==1 & MC==1 & LE==1 & ED==1', 'PV==0 & MS==0 & MC==1 & LE==1 & ED==1', 'LP==1 & PI==1 & MS==0 & LE==1 & ED==1'] {1, 5, 6, 7, 12, 17, 18} 7
+consistency = 1.0 and coverage = 0.875
+
+[21, 15]
+LE==1 is a necessity condition
+ED==1 is a necessity condition
+there are 59 candidate rules
+['LP==1 & MC==1 & LE==1 & ED==1', 'PV==0 & MS==0 & MC==1 & LE==1 & ED==1', 'LP==1 & PI==1 & MS==0 & LE==1 & ED==1'] {1, 5, 6, 7, 9, 12, 17, 18} 8
+consistency = 1.0 and coverage = 0.8888888888888888
+
+[17, 1]
+LE==1 is a necessity condition
+ED==1 is a necessity condition
+there are 48 candidate rules
+['LP==1 & MC==1 & LE==1 & ED==1', 'PV==0 & MS==0 & MC==1 & LE==1 & ED==1', 'LP==1 & PI==1 & MS==0 & LE==1 & ED==1'] {18, 5, 6, 7, 9, 12} 6
+consistency = 1.0 and coverage = 0.8571428571428571
+
+[6, 9]
+LE==1 is a necessity condition
+ED==1 is a necessity condition
+there are 44 candidate rules
+['LP==1 & MC==1 & LE==1 & ED==1', 'PV==0 & MS==0 & MC==1 & LE==1 & ED==1'] {1, 5, 7, 12, 17, 18} 6
+consistency = 1.0 and coverage = 0.8571428571428571
+
+[16, 12]
+LE==1 is a necessity condition
+LP==1 is a necessity condition
+ED==1 is a necessity condition
+there are 26 candidate rules
+['MS==0 & MC==1 & LE==1 & LP==1 & ED==1', 'PI==1 & MS==0 & LE==1 & LP==1 & ED==1'] {1, 5, 6, 7, 9, 15, 16} 7
+consistency = 1.0 and coverage = 0.875
+
+EE4，LT13
+LE==1 is a necessity condition
+ED==1 is a necessity condition
+there are 59 candidate rules
+['LP==1 & MC==1 & LE==1 & ED==1', 'PV==0 & MS==0 & MC==1 & LE==1 & ED==1', 'LP==1 & PI==1 & MS==0 & LE==1 & ED==1'] {1, 4, 5, 6, 8, 11, 15, 16} 8
+consistency = 1.0 and coverage = 0.8888888888888888
+
+[3, 15]
+LE==1 is a necessity condition
+ED==1 is a necessity condition
+there are 62 candidate rules
+['MS==0 & MC==1 & LE==1 & ED==1', 'LP==1 & PI==1 & MS==0 & LE==1 & ED==1'] {1, 5, 6, 7, 9, 12, 17, 18} 8
+consistency = 1.0 and coverage = 0.8888888888888888
+
+[8, 10]
+LE==1 is a necessity condition
+ED==1 is a necessity condition
+there are 61 candidate rules
+['LP==1 & MC==1 & LE==1 & ED==1', 'PV==0 & MC==1 & LE==1 & ED==1', 'LP==1 & PI==1 & MS==0 & LE==1 & ED==1'] {1, 5, 6, 7, 9, 12, 17, 18} 8
+consistency = 1.0 and coverage = 0.8888888888888888
+
+cutoff=1,2,3,4结果都相同 cutoff=5少了最后一个
+consistency=1.0,cutoff=2
+LE==1 is a necessity condition
+ED==1 is a necessity condition
+there are 54 candidate rules
+['LP==1 & MC==1 & LE==1 & ED==1', 'PV==0 & MS==0 & MC==1 & LE==1 & ED==1', 'LP==1 & PI==1 & MS==0 & LE==1 & ED==1'] 
+{1, 5, 6, 7, 9, 12, 17, 18} 8
+consistency = 1.0 and coverage = 0.8888888888888888
+
+consistency=0.9,cutoff=2
+LE==1 is a necessity condition
+ED==1 is a necessity condition
+there are 54 candidate rules
+['LP==1 & MC==1 & LE==1 & ED==1', 'PV==0 & MS==0 & MC==1 & LE==1 & ED==1', 'LP==1 & PI==1 & MS==0 & LE==1 & ED==1'] 
+{1, 5, 6, 7, 9, 12, 17, 18} 8
+consistency = 1.0 and coverage = 0.8888888888888888
+
+consistency=0.8,cutoff=2
+LE==1 is a necessity condition
+ED==1 is a necessity condition
+there are 59 candidate rules
+['LP==1 & MC==1 & LE==1 & ED==1', 'PV==0 & MS==0 & MC==1 & LE==1 & ED==1', 'LP==1 & PI==1 & MS==0 & LE==1 & ED==1'] 
+{1, 5, 6, 7, 9, 12, 17, 18} 8
+consistency = 1.0 and coverage = 0.8888888888888888
+
+consistency=0.75,cutoff=2
+LE==1 is a necessity condition
+ED==1 is a necessity condition
+there are 67 candidate rules
+['MS==0 & MC==1 & LE==1 & ED==1', 'LP==1 & PI==1 & MS==0 & LE==1 & ED==1']
+ {1, 5, 6, 7, 9, 12, 17, 18} 8
+consistency = 1.0 and coverage = 0.8888888888888888
+
+consistency=0.7,cutoff=2
+LE==1 is a necessity condition
+ED==1 is a necessity condition
+there are 68 candidate rules
+['MS==0 & MC==1 & LE==1 & ED==1', 'LP==1 & MS==0 & LE==1 & ED==1'] {1, 5, 6, 7, 9, 12, 17, 18} 8
+consistency = 0.8 and coverage = 0.8888888888888888
+
+
+
+consistency=0.8,cutoff=1
+LE==1 is a necessity condition
+ED==1 is a necessity condition
+there are 92 candidate rules
+['LP==1 & MC==1 & LE==1 & ED==1', 'PV==0 & MS==0 & MC==1 & LE==1 & ED==1', 'LP==1 & PI==1 & MS==0 & LE==1 & ED==1'] 
+{1, 5, 6, 7, 9, 12, 17, 18} 8
+consistency = 1.0 and coverage = 0.8888888888888888
+
+consistency=0.8,cutoff=2
+LE==1 is a necessity condition
+ED==1 is a necessity condition
+there are 59 candidate rules
+['LP==1 & MC==1 & LE==1 & ED==1', 'PV==0 & MS==0 & MC==1 & LE==1 & ED==1', 'LP==1 & PI==1 & MS==0 & LE==1 & ED==1'] 
+{1, 5, 6, 7, 9, 12, 17, 18} 8
+consistency = 1.0 and coverage = 0.8888888888888888
+
+consistency=0.8,cutoff=3
+LE==1 is a necessity condition
+ED==1 is a necessity condition
+there are 37 candidate rules
+['LP==1 & MC==1 & LE==1 & ED==1', 'PV==0 & MS==0 & MC==1 & LE==1 & ED==1', 'LP==1 & PI==1 & MS==0 & LE==1 & ED==1']
+ {1, 5, 6, 7, 9, 12, 17, 18} 8
+consistency = 1.0 and coverage = 0.8888888888888888
+
+consistency=0.8,cutoff=4
+LE==1 is a necessity condition
+ED==1 is a necessity condition
+there are 13 candidate rules
+['LP==1 & MC==1 & LE==1 & ED==1', 'PV==0 & MS==0 & MC==1 & LE==1 & ED==1', 'LP==1 & PI==1 & MS==0 & LE==1 & ED==1'] 
+{1, 5, 6, 7, 9, 12, 17, 18} 8
+consistency = 1.0 and coverage = 0.8888888888888888
+
+consistency=0.8,cutoff=5
+LE==1 is a necessity condition
+ED==1 is a necessity condition
+there are 9 candidate rules
+['LP==1 & MC==1 & LE==1 & ED==1', 'PV==0 & MS==0 & MC==1 & LE==1 & ED==1'] {1, 5, 7, 9, 12, 17, 18} 7
+consistency = 1.0 and coverage = 0.7777777777777778

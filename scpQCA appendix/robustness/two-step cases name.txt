@@ -1,0 +1,10 @@
+SI, ES
+SE, NL
+HU, GR
+SK, LV
+PL, BE
+FI, GR
+NL, IT
+EE, LT
+DE, LV
+GB, HU

@@ -1,0 +1,10 @@
+EastWales, Karlsruhe, OuterLondon, Darmstadt, LuxembourgB, Schwaben, VlaamsBrabant, EastAnglia, Saarland, Kassel
+Stuttgart, NorthYorkshire, InnerLondon, LimgburgB, Smalandmedoearna, Thueringen, Drenthe, BedfordshireandHertfordshire, SurreyEastandWestSussex, SachsenAnhalt
+Zeeland, Bremen, EastAnglia, Syddanmark, InnerLondon, oestraMellansverige, Darmstadt, Saarland, Kassel, WestVlaanderen,
+CornwallandIslesofScilly, NorthernIreland, WestMidlands, Cumbria, oestraMellansverige, Unterfranken, LuxembourgB, Stockholm, HampshireandIsleofWight, EasternScotland,
+Sydsverige, Lincolnshire, Gelderland, Tuebingen, Liege, InnerLondon, Leipzig, oevreNorrland, EastYorkshireandNorthernLincolnshire, Zeeland,
+Arnsberg, VlaamsBrabant, Devon, OuterLondon, Overijssel, Hovedstaden, Darmstadt, Hannover, Oberpfalz, Sydsverige,
+NorraMellansverige, Devon, Giessen, Sydsverige, Drenthe, Oberfranken, MellerstaNorrland, Berlin, Utrecht, OostVlaanderen
+LuxembourgB, BerkshireBuckinghamshireandOxfordshire, Schwaben, SachsenAnhalt, Zeeland, Koeln, Darmstadt, NorraMellansverige, Hamburg, LeicestershireRutlandandNorthamptonshire
+Essex, Lueneburg, Brussels, Koeln, SouthYorkshire, Overijssel, Freiburg, Koblenz, OuterLondon, WeserEms
+EasternScotland, GloucestershireWiltshireandBristol/Batharea, Vaestsverige, Tuebingen, EastWales, Essex, LuxembourgB, NoordBrabant, Utrecht, Koblenz,
