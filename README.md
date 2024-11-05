@@ -200,3 +200,14 @@ The best opt parameter of scpQCA is: necessary consistency=0.8, sufficiency cons
 ```
 
 The input of `necessary_consistency`, `sufficiency_consistency`, `cutoff` and `unique_cover` are `list` datatype. Function will find the best parameter combination and output the one.
+
+# Citation
+If you find `scpQCA` to be useful in your own research, please consider citing the following paper:
+```
+@article{fu2024scpqca,
+  title={scpQCA: Enhancing mvQCA Applications through Set-Covering-Based QCA Method},
+  author={Fu, Manqing},
+  journal={arXiv preprint arXiv:2410.20208},
+  year={2024}
+}
+```
