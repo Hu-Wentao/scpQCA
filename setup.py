@@ -14,7 +14,7 @@ setuptools.setup(
     description="",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    install_requires=['matplotlib','sklearn'], # 比如["flask>=0.10"]
+    install_requires=['matplotlib','scikit-learn'], # 比如["flask>=0.10"]
     license='Apache 2.0',
     url="https://github.com/Kim-Q/scpQCA",
     packages=setuptools.find_packages(),
